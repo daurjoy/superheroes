@@ -9,16 +9,34 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
+class MainBlocHolder extends InheritedWidget {
+
+  final MainBloc bloc;
+
+  MainBlocHolder({required this.bloc, required final Widget child}): super(child: child);
+  @override
+  bool updateShouldNotify(MainBlocHolder oldWidget) => false;
+
+  static MainBlocHolder of(final BuildContext context) {
+    final InheritedElement element = context.getElementForInheritedWidgetOfExactType<MainBlocHolder>()!;
+    return element.widget as MainBlocHolder;
+  }
+  
+}
+
 class _MainPageState extends State<MainPage> {
   final MainBloc bloc = MainBloc();
 
   @override
   Widget build(BuildContext context) {
 
-    return const Scaffold(
-      backgroundColor: SuperheroColors.background,
-      body: SafeArea(
-        child: MainPageContent(),
+    return MainBlocHolder(
+      bloc: bloc,
+      child: const Scaffold(
+        backgroundColor: SuperheroColors.background,
+        body: SafeArea(
+          child: MainPageContent(),
+        ),
       ),
     );
   }
@@ -36,8 +54,7 @@ class MainPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _MainPageState state = context.findAncestorStateOfType<_MainPageState>()!;
-    final MainBloc bloc = state.bloc;
+    final MainBloc bloc = MainBlocHolder.of(context).bloc;
     return Stack(
       children: [
         const MainPageStateWidget(),
@@ -70,8 +87,7 @@ class MainPageStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _MainPageState state = context.findAncestorStateOfType<_MainPageState>()!;
-    final MainBloc bloc = state.bloc;
+    final MainBloc bloc = MainBlocHolder.of(context).bloc;
     return StreamBuilder<MainPageState>(
       stream: bloc.observeMainPageState(),
       builder: (context, snapshot) {
