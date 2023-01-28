@@ -22,12 +22,6 @@ class MyApp extends StatelessWidget {
 
     return baseTheme.copyWith(
       textTheme: GoogleFonts.openSansTextTheme(baseTheme.textTheme),
-
-
-
     );
-
-
-
   }
 }
