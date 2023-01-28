@@ -5,7 +5,10 @@ import 'package:superheroes/widgets/action_button.dart';
 class SuperheroPage extends StatelessWidget {
   final String name;
 
-  const SuperheroPage({Key? key, required this.name,}) : super(key: key);
+  const SuperheroPage({
+    Key? key,
+    required this.name,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

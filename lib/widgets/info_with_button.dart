@@ -11,11 +11,19 @@ class InfoWithButton extends StatelessWidget {
   final double imageWidth;
   final double imageTopPadding;
 
-  const InfoWithButton({Key? key, required this.title, required this.subtitle, required this.buttonText, required this.assetImage, required this.imageHeight, required this.imageWidth, required this.imageTopPadding}) : super(key: key);
+  const InfoWithButton(
+      {Key? key,
+      required this.title,
+      required this.subtitle,
+      required this.buttonText,
+      required this.assetImage,
+      required this.imageHeight,
+      required this.imageWidth,
+      required this.imageTopPadding})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -93,7 +93,6 @@ class MainPageStateWidget extends StatelessWidget {
           case MainPageState.loadingError:
             return const LoadingErrorWidget();
 
-
           default:
             return Center(
               child: Text(
@@ -242,7 +241,9 @@ class FavoritesWidget extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SuperheroPage(name: 'Batman',),
+                  builder: (context) => const SuperheroPage(
+                    name: 'Batman',
+                  ),
                 ),
               );
             },
@@ -259,7 +260,9 @@ class FavoritesWidget extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SuperheroPage(name: 'Ironman',),
+                  builder: (context) => const SuperheroPage(
+                    name: 'Ironman',
+                  ),
                 ),
               );
             },
@@ -301,7 +304,9 @@ class SearchResultsWidget extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SuperheroPage(name: 'Batman',),
+                  builder: (context) => const SuperheroPage(
+                    name: 'Batman',
+                  ),
                 ),
               );
             },
@@ -318,7 +323,9 @@ class SearchResultsWidget extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SuperheroPage(name: 'Venom',),
+                  builder: (context) => const SuperheroPage(
+                    name: 'Venom',
+                  ),
                 ),
               );
             },
