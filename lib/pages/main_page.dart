@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:superheroes/blocs/main_bloc.dart';
 import 'package:superheroes/resources/superhero_colors.dart';
 import 'package:superheroes/resources/superhero_images.dart';
-import 'package:superheroes/widgets/action_button.dart';
 import 'package:superheroes/widgets/info_with_button.dart';
 import 'package:superheroes/widgets/superhero_card.dart';
 import 'package:superheroes/pages/superhero_page.dart';
@@ -186,41 +185,20 @@ class MainPageStateWidget extends StatelessWidget {
           case MainPageState.minSymbols:
             return const MinSymbolsWidget();
           case MainPageState.noFavorites:
-            return Stack(
-              children: [
-                NoFavoritesWidget(searchFieldFocusNode: searchFieldFocusNode),
-                Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: ActionButton(
-                        text: 'Remove',
-                        onTap: bloc.removeFavorite,
-                      ),
-                    ))
-              ],
-            );
+            return NoFavoritesWidget(
+                searchFieldFocusNode: searchFieldFocusNode);
           case MainPageState.favorites:
-            return Stack(
-              children: [
-                SuperheroesList(
-                    title: 'Your favorites',
-                    stream: bloc.observeFavoriteSuperheroes()),
-                Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: ActionButton(
-                        text: 'Remove',
-                        onTap: bloc.removeFavorite,
-                      ),
-                    ))
-              ],
+            return SuperheroesList(
+              title: 'Your favorites',
+              stream: bloc.observeFavoriteSuperheroes(),
+              ableToSwipe: true,
             );
           case MainPageState.searchResults:
             return SuperheroesList(
-                title: 'Search results',
-                stream: bloc.observeSearchedSuperheroes());
+              title: 'Search results',
+              stream: bloc.observeSearchedSuperheroes(),
+              ableToSwipe: false,
+            );
           case MainPageState.nothingFound:
             return NothingFoundWidget(
               searchFieldFocusNode: searchFieldFocusNode,
@@ -358,58 +336,145 @@ class NoFavoritesWidget extends StatelessWidget {
 class SuperheroesList extends StatelessWidget {
   final String title;
   final Stream<List<SuperheroInfo>> stream;
+  final bool ableToSwipe;
 
-  const SuperheroesList({Key? key, required this.title, required this.stream})
+  const SuperheroesList(
+      {Key? key,
+      required this.title,
+      required this.stream,
+      required this.ableToSwipe})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<SuperheroInfo>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const SizedBox.shrink();
-          }
-          final List<SuperheroInfo> superheroes = snapshot.data!;
-          return ListView.separated(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            itemCount: superheroes.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.only(
-                      right: 16, left: 16, top: 90, bottom: 12),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: SuperheroColors.whiteText,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                );
-              }
-              final SuperheroInfo item = superheroes[index - 1];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SuperheroCard(
-                  superheroInfo: item,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => SuperheroPage(
-                          name: item.name,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return const SizedBox(height: 8);
-            },
-          );
-        });
+      stream: stream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const SizedBox.shrink();
+        }
+        final List<SuperheroInfo> superheroes = snapshot.data!;
+        return ListView.separated(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          itemCount: superheroes.length + 1,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == 0) {
+              return ListTitleWidget(title: title);
+            }
+            final SuperheroInfo item = superheroes[index - 1];
+            return ListTile(
+              superhero: item,
+              ableToSwipe: ableToSwipe,
+            );
+          },
+          separatorBuilder: (BuildContext context, int index) {
+            return const SizedBox(height: 8);
+          },
+        );
+      },
+    );
+  }
+}
+
+class ListTile extends StatelessWidget {
+  final SuperheroInfo superhero;
+  final bool ableToSwipe;
+
+  const ListTile({
+    Key? key,
+    required this.superhero,
+    required this.ableToSwipe,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    final card = SuperheroCard(
+      superheroInfo: superhero,
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SuperheroPage(
+              id: superhero.id,
+            ),
+          ),
+        );
+      },
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ableToSwipe
+          ? Dismissible(
+              key: ValueKey(superhero.id),
+              background: const BackgroundCard(
+                alignment: Alignment.centerLeft,
+                textAlign: TextAlign.start,
+              ),
+              secondaryBackground: const BackgroundCard(
+                alignment: Alignment.centerRight,
+                textAlign: TextAlign.end,
+              ),
+              onDismissed: (direction) =>
+                  bloc.removeFromFavorites(superhero.id),
+              child: card,
+            )
+          : card,
+    );
+  }
+}
+
+class BackgroundCard extends StatelessWidget {
+  final Alignment alignment;
+  final TextAlign textAlign;
+
+  const BackgroundCard(
+      {Key? key, required this.alignment, required this.textAlign})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      alignment: alignment,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: SuperheroColors.red,
+      ),
+      child: Text(
+        'Remove\nfrom\nfavorites'.toUpperCase(),
+        textAlign: textAlign,
+        style: const TextStyle(
+          color: SuperheroColors.whiteText,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class ListTitleWidget extends StatelessWidget {
+  const ListTitleWidget({
+    Key? key,
+    required this.title,
+  }) : super(key: key);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16, left: 16, top: 90, bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: SuperheroColors.whiteText,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
   }
 }
